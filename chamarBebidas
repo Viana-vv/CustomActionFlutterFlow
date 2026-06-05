@@ -1,0 +1,58 @@
+// Automatic FlutterFlow imports
+import '/backend/schema/structs/index.dart';
+import '/flutter_flow/flutter_flow_theme.dart';
+import '/flutter_flow/flutter_flow_util.dart';
+import '/custom_code/actions/index.dart'; // Imports other custom actions
+import '/flutter_flow/custom_functions.dart'; // Imports custom functions
+import 'package:flutter/material.dart';
+// Begin custom action code
+// DO NOT REMOVE OR MODIFY THE CODE ABOVE!
+
+import '/custom_code/actions/index.dart';
+import '/flutter_flow/custom_functions.dart';
+
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+Future<bool> chamarBebidas() async {
+  try {
+    final url = Uri.parse(
+      'https://x8ki-letl-twmt.n7.xano.io/api:N5W6Wi0C/chamar_bebidas',
+    );
+
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+
+      FFAppState().bebidas = [];
+
+      for (final item in data) {
+        FFAppState().bebidas.add(
+              BebidasStruct(
+                id: item['id'],
+                nome: item['nome']?.toString(),
+                descricao: item['descricao']?.toString(),
+                preco: double.tryParse(item['preco'].toString()),
+              ),
+            );
+      }
+
+      FFAppState().update(() {});
+
+      return true;
+    } else {
+      debugPrint('Erro status: ${response.statusCode}');
+      return false;
+    }
+  } catch (e) {
+    debugPrint('Erro: $e');
+    return false;
+  }
+}
