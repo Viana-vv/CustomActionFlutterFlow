@@ -1,0 +1,54 @@
+// Automatic FlutterFlow imports
+import '/backend/schema/structs/index.dart';
+import '/flutter_flow/flutter_flow_theme.dart';
+import '/flutter_flow/flutter_flow_util.dart';
+import '/custom_code/actions/index.dart'; // Imports other custom actions
+import '/flutter_flow/custom_functions.dart'; // Imports custom functions
+import 'package:flutter/material.dart';
+// Begin custom action code
+// DO NOT REMOVE OR MODIFY THE CODE ABOVE!
+
+import '/custom_code/actions/index.dart';
+import '/flutter_flow/custom_functions.dart';
+
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
+Future<bool> apagarEndereco(String logradouro) async {
+  try {
+    final token = FFAppState().authToken;
+
+    if (token == null || token.isEmpty) {
+      return false;
+    }
+
+    final url = Uri.parse(
+      'https://x8ki-letl-twmt.n7.xano.io/api:p2cJblwr/ApagarEndereco',
+    );
+
+    final response = await http.delete(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: jsonEncode({
+        "logradouro": logradouro,
+      }),
+    );
+
+    print('STATUS => ${response.statusCode}');
+    print('BODY => ${response.body}');
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return true;
+    }
+
+    return false;
+  } catch (e) {
+    print('ERRO => $e');
+
+    return false;
+  }
+}
