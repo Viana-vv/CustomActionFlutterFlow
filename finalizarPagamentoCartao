@@ -1,0 +1,165 @@
+// Automatic FlutterFlow imports
+import '/backend/schema/structs/index.dart';
+import '/flutter_flow/flutter_flow_theme.dart';
+import '/flutter_flow/flutter_flow_util.dart';
+import '/custom_code/actions/index.dart'; // Imports other custom actions
+import '/flutter_flow/custom_functions.dart'; // Imports custom functions
+import 'package:flutter/material.dart';
+// Begin custom action code
+// DO NOT REMOVE OR MODIFY THE CODE ABOVE!
+
+import '/custom_code/actions/index.dart';
+import '/flutter_flow/custom_functions.dart';
+
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+Future<bool> finalizarPagamentoCartao(
+  String cartaoTokenizado,
+) async {
+  try {
+    // =========================================
+    // TOKEN USUÁRIO LOGADO
+    // =========================================
+
+    final token = FFAppState().authToken;
+
+    // =========================================
+    // BUSCA CARRINHO ABERTO
+    // =========================================
+
+    final carrinhoUrl = Uri.parse(
+      'https://x8ki-letl-twmt.n7.xano.io/api:gLCm8_F7/recupera_Carrinho',
+    );
+
+    final carrinhoResponse = await http.get(
+      carrinhoUrl,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    );
+
+    print(
+      'CARRINHO STATUS => ${carrinhoResponse.statusCode}',
+    );
+
+    print(
+      'CARRINHO BODY => ${carrinhoResponse.body}',
+    );
+
+    // ERRO AO BUSCAR CARRINHO
+    if (carrinhoResponse.statusCode != 200 &&
+        carrinhoResponse.statusCode != 201) {
+      return false;
+    }
+
+    // CONVERTE RESPONSE
+    final carrinhoData = jsonDecode(carrinhoResponse.body);
+
+    // PEGA ID DO PEDIDO
+    final idPedido = carrinhoData["pedido"]["id"].toString();
+
+    // =========================================
+    // DATA DE VENCIMENTO +24H
+    // =========================================
+
+    final dataVencimento = DateTime.now().add(
+      const Duration(days: 1),
+    );
+
+    final dataFormatada = "${dataVencimento.year.toString().padLeft(4, '0')}-"
+        "${dataVencimento.month.toString().padLeft(2, '0')}-"
+        "${dataVencimento.day.toString().padLeft(2, '0')}";
+
+    // =========================================
+    // CRIAR COBRANÇA
+    // =========================================
+
+    final criarCobrancaUrl = Uri.parse(
+      'https://x8ki-letl-twmt.n7.xano.io/api:p8YGlIQR/criar_cobranca',
+    );
+
+    final cobrancaResponse = await http.post(
+      criarCobrancaUrl,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: jsonEncode({
+        "tipo": "CREDIT_CARD",
+        "datavenc": dataFormatada,
+        "descricao": "Produtos do carrinho Sabor Local",
+      }),
+    );
+
+    print(
+      'CRIAR COBRANCA STATUS => ${cobrancaResponse.statusCode}',
+    );
+
+    print(
+      'CRIAR COBRANCA BODY => ${cobrancaResponse.body}',
+    );
+
+    // ERRO AO CRIAR COBRANÇA
+    if (cobrancaResponse.statusCode != 200 &&
+        cobrancaResponse.statusCode != 201) {
+      return false;
+    }
+
+    // =========================================
+    // DELAY ENTRE AS APIs
+    // =========================================
+
+    await Future.delayed(
+      const Duration(seconds: 1),
+    );
+
+    // =========================================
+    // PAGAR COBRANÇA
+    // =========================================
+
+    final pagarUrl = Uri.parse(
+      'https://x8ki-letl-twmt.n7.xano.io/api:p8YGlIQR/pagar_cobranca_credito',
+    );
+
+    final pagamentoResponse = await http.post(
+      pagarUrl,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: jsonEncode({
+        "cartao_tokenizado": cartaoTokenizado,
+        "id_pedido": idPedido,
+      }),
+    );
+
+    print(
+      'PAGAMENTO STATUS => ${pagamentoResponse.statusCode}',
+    );
+
+    print(
+      'PAGAMENTO BODY => ${pagamentoResponse.body}',
+    );
+
+    // ERRO NO PAGAMENTO
+    if (pagamentoResponse.statusCode != 200 &&
+        pagamentoResponse.statusCode != 201) {
+      return false;
+    }
+
+    // =========================================
+    // SUCESSO
+    // =========================================
+
+    return true;
+  } catch (e) {
+    print('ERRO => $e');
+
+    return false;
+  }
+}
