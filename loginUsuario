@@ -1,0 +1,83 @@
+// Automatic FlutterFlow imports
+import '/backend/schema/structs/index.dart';
+import '/flutter_flow/flutter_flow_theme.dart';
+import '/flutter_flow/flutter_flow_util.dart';
+import '/custom_code/actions/index.dart'; // Imports other custom actions
+import '/flutter_flow/custom_functions.dart'; // Imports custom functions
+import 'package:flutter/material.dart';
+// Begin custom action code
+// DO NOT REMOVE OR MODIFY THE CODE ABOVE!
+
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+Future<bool> loginUsuario(
+  String email,
+  String password,
+) async {
+  try {
+    final url =
+        Uri.parse('https://x8ki-letl-twmt.n7.xano.io/api:FgvGAkB7/auth/login');
+
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: jsonEncode({
+        'email': email,
+        'password': password,
+      }),
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final data = jsonDecode(response.body);
+
+      // salva o token
+      FFAppState().authToken = data['authToken'];
+
+      // delay pequeno pro Xano reconhecer auth
+      await Future.delayed(
+        const Duration(milliseconds: 800),
+      );
+
+      // cria cliente no Asaas
+      try {
+        final asaasUrl = Uri.parse(
+          'https://x8ki-letl-twmt.n7.xano.io/api:p8YGlIQR/criar_cliente_asaas',
+        );
+
+        final asaasResponse = await http.post(
+          asaasUrl,
+          headers: {
+            'Authorization': 'Bearer ${FFAppState().authToken}',
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+        );
+
+        print('ASAAS STATUS => ${asaasResponse.statusCode}');
+        print('ASAAS BODY => ${asaasResponse.body}');
+
+        final asaasData = jsonDecode(asaasResponse.body);
+
+        final mensagem = asaasData["status"]?["mensagem"] ?? "";
+
+        // ignora se já existir
+        if (mensagem == "Cliente já cadastrado no Asaas") {
+          print('CLIENTE JÁ CADASTRADO');
+        }
+      } catch (e) {
+        print('ERRO ASAAS => $e');
+      }
+
+      return true;
+    } else {
+      return false;
+    }
+  } catch (e) {
+    debugPrint('Erro: $e');
+    return false;
+  }
+}
