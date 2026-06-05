@@ -1,0 +1,99 @@
+// Automatic FlutterFlow imports
+import '/backend/schema/structs/index.dart';
+import '/flutter_flow/flutter_flow_theme.dart';
+import '/flutter_flow/flutter_flow_util.dart';
+import '/custom_code/actions/index.dart'; // Imports other custom actions
+import '/flutter_flow/custom_functions.dart'; // Imports custom functions
+import 'package:flutter/material.dart';
+// Begin custom action code
+// DO NOT REMOVE OR MODIFY THE CODE ABOVE!
+
+import '/custom_code/actions/index.dart';
+import '/flutter_flow/custom_functions.dart';
+
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+Future<bool> cadastrarEnderecoNovo(
+  String cep,
+  String rua,
+  String bairro,
+  String numero,
+  String? complemento,
+  String? referencia,
+) async {
+  try {
+    // 🔹 TOKEN
+    final token = FFAppState().authToken;
+
+    debugPrint('TOKEN: $token');
+
+    // 🔹 1. Buscar dados do CEP no ViaCEP
+    final viaCepUrl = Uri.parse(
+      'https://viacep.com.br/ws/$cep/json/',
+    );
+
+    final viaCepResponse = await http.get(viaCepUrl);
+
+    if (viaCepResponse.statusCode != 200) {
+      debugPrint(
+        'Erro ao consultar ViaCEP: ${viaCepResponse.body}',
+      );
+      return false;
+    }
+
+    final viaCepData = jsonDecode(viaCepResponse.body);
+
+    if (viaCepData['erro'] == true) {
+      debugPrint('CEP inválido.');
+      return false;
+    }
+
+    // 🔹 Extrair dados do CEP
+    final cidade = viaCepData['localidade'] ?? '';
+    final uf = viaCepData['uf'] ?? '';
+    final estado = viaCepData['estado'] ?? uf;
+
+    // 🔹 2. Enviar para API
+    final url = Uri.parse(
+      'https://x8ki-letl-twmt.n7.xano.io/api:p2cJblwr/EnviarEnderecoNovo',
+    );
+
+    final body = {
+      'cep': cep,
+      'cidade': cidade,
+      'estado': estado,
+      'uf': uf,
+      'rua': rua,
+      'bairro': bairro,
+      'numero': numero,
+      'complemento': complemento,
+      'referencia': referencia,
+    };
+
+    final response = await http.post(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: jsonEncode(body),
+    );
+
+    debugPrint('STATUS: ${response.statusCode}');
+    debugPrint('BODY: ${response.body}');
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return true;
+    } else {
+      debugPrint(
+        'Erro ao cadastrar endereço: ${response.body}',
+      );
+      return false;
+    }
+  } catch (e) {
+    debugPrint('Erro: $e');
+    return false;
+  }
+}
