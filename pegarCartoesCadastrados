@@ -1,0 +1,74 @@
+// Automatic FlutterFlow imports
+import '/backend/schema/structs/index.dart';
+import '/flutter_flow/flutter_flow_theme.dart';
+import '/flutter_flow/flutter_flow_util.dart';
+import '/custom_code/actions/index.dart'; // Imports other custom actions
+import '/flutter_flow/custom_functions.dart'; // Imports custom functions
+import 'package:flutter/material.dart';
+// Begin custom action code
+// DO NOT REMOVE OR MODIFY THE CODE ABOVE!
+
+import '/custom_code/actions/index.dart';
+import '/flutter_flow/custom_functions.dart';
+
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
+Future<dynamic> pegarCartoesCadastrados() async {
+  try {
+    final url = Uri.parse(
+      'https://x8ki-letl-twmt.n7.xano.io/api:p8YGlIQR/pega_cartoes_cadastrados',
+    );
+
+    final token = FFAppState().authToken;
+
+    if (token == null || token.isEmpty) {
+      return {
+        "hasCard": false,
+        "cards": [],
+      };
+    }
+
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    );
+
+    print('STATUS => ${response.statusCode}');
+    print('BODY => ${response.body}');
+
+    // SEM CARTÕES
+    if (response.statusCode == 404) {
+      return {
+        "hasCard": false,
+        "cards": [],
+      };
+    }
+
+    // COM CARTÕES
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+
+      return {
+        "hasCard": true,
+        "cards": data,
+      };
+    }
+
+    return {
+      "hasCard": false,
+      "cards": [],
+    };
+  } catch (e) {
+    print('ERRO => $e');
+
+    return {
+      "hasCard": false,
+      "cards": [],
+    };
+  }
+}
