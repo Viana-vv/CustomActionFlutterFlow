@@ -1,0 +1,41 @@
+import 'dart:convert';
+import 'dart:math' as math;
+
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
+import 'package:timeago/timeago.dart' as timeago;
+import '/flutter_flow/custom_functions.dart';
+import '/flutter_flow/lat_lng.dart';
+import '/flutter_flow/place.dart';
+import '/flutter_flow/uploaded_file.dart';
+import '/backend/schema/structs/index.dart';
+
+String respostaCarrinho(dynamic carrinho) {
+  /// MODIFY CODE ONLY BELOW THIS LINE
+
+  // Se vier nulo
+  if (carrinho == null) {
+    return "Você não adicionou nada ao carrinho";
+  }
+
+  // Erro 429
+  if (carrinho["status"].toString() == "429") {
+    return "Você não adicionou nada ao carrinho";
+  }
+
+  // Qualquer erro
+  if (carrinho["success"] == false) {
+    return "Você não adicionou nada ao carrinho";
+  }
+
+  // Lista vazia
+  if (carrinho["itens"] == null || carrinho["itens"].isEmpty) {
+    return "Você não adicionou nada ao carrinho";
+  }
+
+  // Tudo certo
+  return "";
+
+  /// MODIFY CODE ONLY ABOVE THIS LINE
+}
