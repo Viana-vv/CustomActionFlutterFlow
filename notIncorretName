@@ -1,0 +1,23 @@
+import 'dart:convert';
+import 'dart:math' as math;
+
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
+import 'package:timeago/timeago.dart' as timeago;
+import '/flutter_flow/custom_functions.dart';
+import '/flutter_flow/lat_lng.dart';
+import '/flutter_flow/place.dart';
+import '/flutter_flow/uploaded_file.dart';
+import '/backend/schema/structs/index.dart';
+
+bool notIncorretName(String nome) {
+  /// MODIFY CODE ONLY BELOW THIS LINE
+
+  if (nome.trim().isEmpty) return false;
+
+  final regex = RegExp(r"^[A-Za-zÀ-ÿ\s]+$");
+  return regex.hasMatch(nome);
+
+  /// MODIFY CODE ONLY ABOVE THIS LINE
+}
