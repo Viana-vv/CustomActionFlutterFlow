@@ -1,0 +1,49 @@
+// Automatic FlutterFlow imports
+import '/backend/schema/structs/index.dart';
+import '/flutter_flow/flutter_flow_theme.dart';
+import '/flutter_flow/flutter_flow_util.dart';
+import '/custom_code/actions/index.dart'; // Imports other custom actions
+import '/flutter_flow/custom_functions.dart'; // Imports custom functions
+import 'package:flutter/material.dart';
+// Begin custom action code
+// DO NOT REMOVE OR MODIFY THE CODE ABOVE!
+
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+Future<bool> cadastrarUsuario(
+  String name,
+  String email,
+  String password,
+  String telefone,
+  String cpf,
+) async {
+  try {
+    final url =
+        Uri.parse('https://x8ki-letl-twmt.n7.xano.io/api:FgvGAkB7/auth/signup');
+
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: jsonEncode({
+        'name': name,
+        'email': email,
+        'password': password,
+        'telefone': telefone,
+        'cpf': cpf,
+      }),
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (e) {
+    debugPrint('Erro: $e');
+    return false;
+  }
+}
