@@ -1,0 +1,82 @@
+// Automatic FlutterFlow imports
+import '/backend/schema/structs/index.dart';
+import '/flutter_flow/flutter_flow_theme.dart';
+import '/flutter_flow/flutter_flow_util.dart';
+import '/custom_code/actions/index.dart'; // Imports other custom actions
+import '/flutter_flow/custom_functions.dart'; // Imports custom functions
+import 'package:flutter/material.dart';
+// Begin custom action code
+// DO NOT REMOVE OR MODIFY THE CODE ABOVE!
+
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+Future<bool> cadastrarEndereco(
+  String email,
+  String cep,
+  String rua,
+  String bairro,
+  String numero,
+  String? complemento,
+  String? referencia,
+) async {
+  try {
+    // 🔹 1. Buscar dados do CEP no ViaCEP
+    final viaCepUrl = Uri.parse('https://viacep.com.br/ws/$cep/json/');
+    final viaCepResponse = await http.get(viaCepUrl);
+
+    if (viaCepResponse.statusCode != 200) {
+      debugPrint('Erro ao consultar ViaCEP: ${viaCepResponse.body}');
+      return false;
+    }
+
+    final viaCepData = jsonDecode(viaCepResponse.body);
+
+    if (viaCepData['erro'] == true) {
+      debugPrint('CEP inválido.');
+      return false;
+    }
+
+    // Extrair cidade, estado e uf
+    final cidade = viaCepData['localidade'] ?? '';
+    final uf = viaCepData['uf'] ?? '';
+    final estado = viaCepData['estado'] ?? uf;
+
+    // 🔹 2. Enviar dados para o endpoint de cadastro
+    final url = Uri.parse(
+      'https://x8ki-letl-twmt.n7.xano.io/api:p2cJblwr/EnviarEndereco',
+    );
+
+    final body = {
+      'email': email,
+      'cep': cep,
+      'cidade': cidade,
+      'estado': estado,
+      'uf': uf,
+      'rua': rua,
+      'bairro': bairro,
+      'numero': numero,
+      'complemento': complemento,
+      'referencia': referencia,
+    };
+
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: jsonEncode(body),
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return true;
+    } else {
+      debugPrint('Erro ao cadastrar endereço: ${response.body}');
+      return false;
+    }
+  } catch (e) {
+    debugPrint('Erro: $e');
+    return false;
+  }
+}
