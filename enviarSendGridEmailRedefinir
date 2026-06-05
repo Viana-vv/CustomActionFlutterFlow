@@ -1,0 +1,59 @@
+// Automatic FlutterFlow imports
+import '/backend/schema/structs/index.dart';
+import '/flutter_flow/flutter_flow_theme.dart';
+import '/flutter_flow/flutter_flow_util.dart';
+import '/custom_code/actions/index.dart'; // Imports other custom actions
+import '/flutter_flow/custom_functions.dart'; // Imports custom functions
+import 'package:flutter/material.dart';
+// Begin custom action code
+// DO NOT REMOVE OR MODIFY THE CODE ABOVE!
+
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:flutter/foundation.dart'; // para debugPrint
+
+Future<bool> enviarSendGridEmailRedefinir(String email) async {
+  try {
+    final url = Uri.parse(
+        'https://x8ki-letl-twmt.n7.xano.io/api:6wd5v2nc/enviarCodigo');
+
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: jsonEncode({'email': email}),
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      // ✅ Envio OK — dispara o apagar sem bloquear o fluxo
+      final urlApagar =
+          Uri.parse('https://x8ki-letl-twmt.n7.xano.io/api:R5-R5wwV/apagar');
+
+      // Executa o apagar em segundo plano
+      Future(() async {
+        try {
+          await http.delete(
+            urlApagar,
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+            },
+            body: jsonEncode({}), // endpoint espera vazio
+          );
+        } catch (e) {
+          debugPrint('Erro ao apagar: $e');
+        }
+      });
+
+      // Retorna sucesso imediatamente
+      return true;
+    } else {
+      return false;
+    }
+  } catch (e) {
+    debugPrint('Erro: $e');
+    return false;
+  }
+}
